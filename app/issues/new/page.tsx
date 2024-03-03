@@ -7,17 +7,17 @@ import axios from 'axios';
 import "easymde/dist/easymde.min.css";
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { createIssueSchema } from '@/app/validationSchemas';
+import { z } from 'zod'; 
 
-
-
-interface IssueForm {
-    title: string;
-    description: string;
-}
+type IssueForm = z.infer<typeof createIssueSchema>;
 
 const NewIssuePage = () => {
     const router = useRouter(); 
-    const {register, control, handleSubmit} = useForm<IssueForm>();
+    const {register, control, handleSubmit, formState: { errors }} = useForm<IssueForm>({
+        resolver: zodResolver(createIssueSchema)
+    });
     const [error, setError] = useState('');
  
     return (
@@ -41,11 +41,13 @@ const NewIssuePage = () => {
                 <TextField.Root>
                     <TextField.Input placeholder="Title" {...register("title")} />
                 </TextField.Root>
+                {errors.title && <p style={{ color: 'red' }}>{errors.title.message}</p>}
                 <Controller 
                     name="description"
                     control={control}
                     render={({ field }) => <SimpleMDE placeholder="Description" {...field}  />}
                 />
+                {errors.description && <p style={{ color: 'red' }}>{errors.description.message}</p>}
                 <Button>Submit New Issue</Button>
             </form>
         </div>
